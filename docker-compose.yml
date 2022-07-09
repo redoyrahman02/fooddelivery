@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  apiemployee:
+    image: fdapi
+    build: ./fdapi
+    ports:
+      - 3000:3000
+    restart: always 
+
+  mongodatabase:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: atiq
+      MONGO_INITDB_ROOT_PASSWORD: atiqpasswordWER
+    volumes:
+      - mongovolume:/data/db
+
+volumes:
+  mongovolume:
+    driver: local
