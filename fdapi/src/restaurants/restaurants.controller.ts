@@ -2,30 +2,40 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
+import { ApiResponse } from '@nestjs/swagger';
 
 @Controller('restaurants')
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
-
   
-  @Post()
-  findOpenRestaurants(@Body() postData: any ){
+  @Post('/fineOpenRestaurants')
+  async findOpenRestaurants(@Body() postData: any ){
+    return await this.restaurantsService.findAll(postData);
+  }
+
+  @Post('/searchRestaurants')
+  async searchRestanrants(@Body() postData: any ){
 
   }
 
-  @Post()
-  searchRestanrants(@Body() postData: any ){
-
-  }
-
-  @Post()
-  purchaseDishFromRestaurant(){
+  @Post('/purchaseDishFromRestaurant')
+  async purchaseDishFromRestaurant(@Body() postData: any ){
     
   }
 
-  @Post()
-  topRestaurants(){
+  @Post('/topRestaurants')
+  async topRestaurants(@Body() postData: any ){
 
+  }
+
+  @Post('/load/restaurantsData')
+  async loadRestaurants(@Body() postData: any ){
+    return await this.restaurantsService.loadRestaurants( postData); 
+  }
+
+  @Post('/load/users')
+  async loadUsers(@Body() postData: any ){
+    return await this.restaurantsService.loadUsers( postData);
   }
   
 }
