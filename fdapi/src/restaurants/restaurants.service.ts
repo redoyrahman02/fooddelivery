@@ -8,6 +8,7 @@ export class RestaurantsService {
     return 'This action adds a new restaurant';
   }
 
+  //finds all the restaurants
   findAll() {
     return `This action returns all restaurants`;
   }

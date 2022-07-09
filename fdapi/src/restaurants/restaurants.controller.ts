@@ -7,28 +7,25 @@ import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
+  
   @Post()
-  create(@Body() createRestaurantDto: CreateRestaurantDto) {
-    return this.restaurantsService.create(createRestaurantDto);
+  findOpenRestaurants(@Body() postData: any ){
+
   }
 
-  @Get()
-  findAll() {
-    return this.restaurantsService.findAll();
+  @Post()
+  searchRestanrants(@Body() postData: any ){
+
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.restaurantsService.findOne(+id);
+  @Post()
+  purchaseDishFromRestaurant(){
+    
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRestaurantDto: UpdateRestaurantDto) {
-    return this.restaurantsService.update(+id, updateRestaurantDto);
-  }
+  @Post()
+  topRestaurants(){
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.restaurantsService.remove(+id);
   }
+  
 }
