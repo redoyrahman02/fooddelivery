@@ -21,7 +21,13 @@ export class RestaurantsService {
   //finds all the restaurants
   async findAll( postData: any ) {
 
-    const restaurants = await this.restaurantsModel.find(); 
+    const day = postData.day ; 
+
+    const startTime = postData.startTime ; 
+
+    const endTime = postData.endTime; 
+
+    const restaurants = await this.restaurantsModel.find({ openingHours: {$elemMatch: {"day": day , start: {$gt: startTime } , end: {$lte: endTime } } } }); 
 
     return {'message': 'All Open Restaurants ', 'status': 200, 'data': restaurants };
   }
@@ -75,23 +81,49 @@ export class RestaurantsService {
 
                 let firstPart = secondSeparator[0].trim(); 
                 let secondPart = secondSeparator[1].trim(); 
+                let hour = ''; 
+                let amOrpm = '' ; 
+                let secondDay = false; 
+                let secondDayValue = '' ; 
+                let multipleDays = []; 
 
                 let thirdseparator = firstPart.split(' '); 
 
                 if( thirdseparator && Array.isArray( thirdseparator) ){
 
-                  if( thirdseparator.length==3){
-                    
-                  }
+                  if( thirdseparator.length>3 ){
 
-                  openingHourObject.day = thirdseparator[0].trim().toLowerCase(); 
+                    for( let j=0 ; j < thirdseparator.length ; j++ ){
 
-                  let hour = thirdseparator[1].trim(); 
-                  let amOrpm = thirdseparator[2].trim(); 
+                      let word = thirdseparator[j] ; 
+
+                      if( !isNaN( word.charAt(0) ) ){
+                        break ; 
+                      }
+                      multipleDays.push( word.replace(',', ''));
+                    }
+                    openingHourObject.day = thirdseparator[0].trim().toLowerCase().replace(',', ''); 
+                    secondDay = true ; 
+                    // secondDayValue = thirdseparator[1].trim().toLowerCase() ; 
+                    hour = thirdseparator[multipleDays.length].trim(); 
+                    amOrpm = thirdseparator[(multipleDays.length+1)].trim();
+                  }else{
+                    openingHourObject.day = thirdseparator[0].trim().toLowerCase(); 
+                    hour = thirdseparator[1].trim(); 
+                    amOrpm = thirdseparator[2].trim();
+                  }                  
+
+                   
                   if( amOrpm == 'am'){
                     openingHourObject.start =  this.timeToInt( hour ); 
                   }else{
-                    openingHourObject.start = 1200 +  this.timeToInt( hour ); 
+                    let baseHour = this.timeToInt( hour );
+                    if( baseHour > 11 ){
+                      openingHourObject.start =   this.timeToInt( hour ); 
+                    }else{
+                      openingHourObject.start = 1200 +  this.timeToInt( hour ); 
+                    }
+                    
                   }
 
                 }
@@ -102,17 +134,27 @@ export class RestaurantsService {
                   let amOrpm = endTimeSeparator[1].trim(); 
 
                   if( amOrpm =='am'){
-
                     openingHourObject.end = this.timeToInt( hour ) ;
-
-                  }else{
-                    
-                      openingHourObject.end = 1200 + this.timeToInt( hour );      
-                    
+                  }else{                    
+                      openingHourObject.end = 1200 + this.timeToInt( hour );            
 
                   }
                 }
-                openingHoursArray.push( openingHourObject );
+                
+                if( secondDay ){
+                  for(let j=0 ; j<multipleDays.length ; j++ ){
+                    let tmpObject = {
+                      day: multipleDays[j], 
+                      start: openingHourObject.start, 
+                      end: openingHourObject.end 
+                    }
+                    openingHoursArray.push( tmpObject );
+                  }
+                  
+                }else{
+                  // console.log( openingHourObject)
+                  openingHoursArray.push( openingHourObject );
+                }
 
               }else if( rowCount == 3 ){
 
@@ -129,7 +171,7 @@ export class RestaurantsService {
             cashBalance: jsonData[i].cashBalance
           }
           console.log( singleData );
-          return '' ; 
+          // return '' ; 
           let restaurantModel = new this.restaurantsModel( singleData);
 
           await restaurantModel.save(); 
