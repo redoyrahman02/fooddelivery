@@ -15,7 +15,7 @@ export class RestaurantsController {
 
   @Post('/searchRestaurants')
   async searchRestanrants(@Body() postData: any ){
-
+    return await this.restaurantsService.searchRestaurants( postData );
   }
 
   @Post('/purchaseDishFromRestaurant')

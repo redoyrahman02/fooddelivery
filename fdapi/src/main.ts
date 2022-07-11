@@ -17,7 +17,7 @@ const options = new DocumentBuilder()
 
 export async function swaggerfunc() {
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup("/doc", app, document);
+  SwaggerModule.setup("/api", app, document);
   return "done";
 }
 

@@ -20,6 +20,19 @@ export class RestaurantsService {
     return 'This action adds a new restaurant';
   }
 
+  //search restaurants
+  async searchRestaurants( postData: any ){
+    const searchTerm = postData.searchTerm || "coffee"; 
+    const restaurants = await this.menuModel.find( { $text: { $search: searchTerm } } ); 
+
+    return {'message': 'All Restaurants ', 'status': 200, 'data': restaurants };
+  }
+
+  //purchase a dish 
+  async dishPurchase( postData: any){
+
+  }
+
   //finds all the restaurants
   async findAll( postData: any ) {
 
