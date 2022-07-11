@@ -25,7 +25,7 @@ export class RestaurantsController {
 
   @Post('/topRestaurants')
   async topRestaurants(@Body() postData: any ){
-
+    return await this.restaurantsService.topRestaurants( postData );
   }
 
   @Post('/load/restaurantsData')

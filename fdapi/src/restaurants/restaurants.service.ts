@@ -3,6 +3,7 @@ import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { restaurantsInterface } from './interfaces/restaurants.interface';
 import { usersInterface } from './interfaces/users.interface';
+import { menuInterface } from './interfaces/menu.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 const fs = require('fs');
@@ -12,6 +13,7 @@ export class RestaurantsService {
   constructor(
     @InjectModel('restaurantsSchema') private restaurantsModel: Model<restaurantsInterface>,
     @InjectModel('usersSchema') private usersModel: Model<usersInterface>,
+    @InjectModel('menuSchema') private menuModel: Model<menuInterface>,
   ){}
 
   create(createRestaurantDto: CreateRestaurantDto) {
@@ -27,9 +29,36 @@ export class RestaurantsService {
 
     const endTime = postData.endTime; 
 
-    const restaurants = await this.restaurantsModel.find({ openingHours: {$elemMatch: {"day": day , start: {$gt: startTime } , end: {$lte: endTime } } } }); 
+    const restaurants = await this.restaurantsModel.find({ openingHours: {$elemMatch: {"day": day , start: {$gt: startTime } , end: {$lte: endTime } } } }).sort({'restaurantName': 1} ); 
 
     return {'message': 'All Open Restaurants ', 'status': 200, 'data': restaurants };
+  }
+
+  //find top restaurants with x number of dishes on a price range 
+  async topRestaurants( postData: any ){
+
+    const dishNumber = postData.dishNumber || 5; 
+
+    const startPrice = postData.startPrice || 10 ; 
+
+    const endPrice = postData.endPrice || 14; 
+
+    const numberOfRestanrantsToShow = 10  ;
+
+    const restaurants = await this.menuModel.aggregate(
+      [
+        { $match: { price: {$gte: startPrice , $lte: endPrice} } },
+        { $group: {
+          _id: "$restaurantName", 
+          count:{$count: { } }
+          
+        }},
+        { $match: {  count: {$gte: (dishNumber-1), $lte: (dishNumber+1)}  }}
+      ]
+      ).sort({'_id': 1 } ).limit( numberOfRestanrantsToShow); 
+
+    return {'message': 'All Open Restaurants ', 'status': 200, 'data': restaurants };
+
   }
 
   findOne(id: number) {
@@ -170,6 +199,11 @@ export class RestaurantsService {
             menu: jsonData[i].menu , 
             cashBalance: jsonData[i].cashBalance
           }
+          jsonData[i].menu.map( async (element) =>{
+            element.restaurantName = singleData.restaurantName ; 
+            let tmp = new this.menuModel( element ); 
+            await tmp.save(); 
+          });
           console.log( singleData );
           // return '' ; 
           let restaurantModel = new this.restaurantsModel( singleData);
@@ -196,4 +230,6 @@ export class RestaurantsService {
 
     return returnInt ; 
   }
+
+  
 }
