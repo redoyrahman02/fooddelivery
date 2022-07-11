@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
-import { CreateRestaurantDto } from './dto/create-restaurant.dto';
+import { fineOpenRestaurantsDTO, topRestaurantsDTO, searchRestaurantsDTO } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { ApiResponse } from '@nestjs/swagger';
 
@@ -9,12 +9,12 @@ export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
   
   @Post('/fineOpenRestaurants')
-  async findOpenRestaurants(@Body() postData: any ){
+  async findOpenRestaurants(@Body() postData: fineOpenRestaurantsDTO ){
     return await this.restaurantsService.findAll(postData);
   }
 
   @Post('/searchRestaurants')
-  async searchRestanrants(@Body() postData: any ){
+  async searchRestanrants(@Body() postData: searchRestaurantsDTO ){
     return await this.restaurantsService.searchRestaurants( postData );
   }
 
@@ -24,7 +24,7 @@ export class RestaurantsController {
   }
 
   @Post('/topRestaurants')
-  async topRestaurants(@Body() postData: any ){
+  async topRestaurants(@Body() postData: topRestaurantsDTO ){
     return await this.restaurantsService.topRestaurants( postData );
   }
 
