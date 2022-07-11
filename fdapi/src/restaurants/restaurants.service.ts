@@ -4,8 +4,10 @@ import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { restaurantsInterface } from './interfaces/restaurants.interface';
 import { usersInterface } from './interfaces/users.interface';
 import { menuInterface } from './interfaces/menu.interface';
-import { InjectModel } from '@nestjs/mongoose';
+import { userpurchaseInterface } from './interfaces/userPurchase.interface';
+import { InjectModel,InjectConnection  } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import * as mongoose from 'mongoose';
 const fs = require('fs');
 
 @Injectable()
@@ -14,6 +16,8 @@ export class RestaurantsService {
     @InjectModel('restaurantsSchema') private restaurantsModel: Model<restaurantsInterface>,
     @InjectModel('usersSchema') private usersModel: Model<usersInterface>,
     @InjectModel('menuSchema') private menuModel: Model<menuInterface>,
+    @InjectModel('userPurchaseSchema') private userpurchaseModel: Model<userpurchaseInterface>,
+    @InjectConnection() private readonly connection: mongoose.Connection
   ){}
 
   create(createRestaurantDto: CreateRestaurantDto) {
@@ -31,6 +35,39 @@ export class RestaurantsService {
   //purchase a dish 
   async dishPurchase( postData: any){
 
+    const userId = postData.userId ; 
+    const dishName = postData.dishName ; 
+    const restaurantName = postData.restaurantName ; 
+    const transactionAmount = Number(postData.transactionAmount) ; 
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try{
+
+      const user = await this.usersModel.findOne({id: userId}); 
+
+      if( user && (user.cashBalance > transactionAmount)){
+        user.cashBalance = (user.cashBalance - transactionAmount) ; 
+        await user.save();
+        const purchase={
+          userId: userId, 
+          dishName: dishName,
+          restaurantName: restaurantName,
+          transactionAmount: transactionAmount
+        }; 
+        let userPurchase = new this.userpurchaseModel( purchase ) ; 
+        await userPurchase.save(); 
+        await session.commitTransaction();
+      }
+      
+
+    } catch( error){
+      await session.abortTransaction();
+      throw error;
+    } finally{
+      session.endSession();
+    }
+    
   }
 
   //finds all the restaurants
